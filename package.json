@@ -1,0 +1,27 @@
+{
+  "name": "ef_slack_app",
+  "version": "1.0.0",
+  "description": "EF Slack app",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "start": "node server.js"
+  },
+  "keywords": [
+    "EF",
+    "Slack",
+    "Bot"
+  ],
+  "author": "michal.pasierbski@ef.com",
+  "license": "ISC",
+  "dependencies": {
+    "@slack/events-api": "^1.0.1",
+    "dotenv": "^5.0.0",
+    "express": "^4.16.2",
+    "sprintf-js": "^1.1.1"
+  },
+  "devDependencies": {
+    "jest": "^22.1.4",
+    "sinon": "^4.2.2"
+  }
+}
