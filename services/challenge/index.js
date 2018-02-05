@@ -3,7 +3,7 @@ const Challenge = require('./Challenge');
 
 const ACTIONS = {
   list: async function({ attributes }) {
-    const challenges = await Challenge.list();
+    const challenges = await Challenge.find();
     let text = MESSAGES['noActiveChallenges'];
 
     if (challenges.length > 0) {

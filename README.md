@@ -13,8 +13,8 @@ SLACK_TOKEN=xoxp|xoxb|whatever-access-token
 
 ## Server
 
-`npm start`
+`docker-compose up`
 
 ## Tests
 
-`npm run tests`
+`docker-compose exec app npm run test`

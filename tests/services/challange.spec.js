@@ -12,12 +12,14 @@ describe('challenge', function () {
       });
     });
 
-    describe('#addParticipant', function () {
-      it('should add participant add set score to 0', async function () {
-        const res = await challenge.addParticipant('John');
-        expect(challenge.scores()['John']).toEqual(0);
-      });
-    });
+    // TODO: rethink participants, maybe it's all in given channel?
+    //
+    // describe('#addParticipant', function () {
+    //   it('should add participant add set score to 0', async function () {
+    //     const res = await challenge.addParticipant('John');
+    //     expect(challenge.scores()['John']).toEqual(0);
+    //   });
+    // });
   });
 
   describe('service', function () {
@@ -39,9 +41,9 @@ describe('challenge', function () {
 
     describe('#create', function () {
       it('should store challenge', async function () {
-        const before = await Challenge.list();
+        const before = await Challenge.find();
         const result = await challenge({ text: 'create name=Plank'});
-        const after = await Challenge.list();
+        const after = await Challenge.find();
 
         expect(after.length - before.length).toEqual(1);
       });
@@ -49,21 +51,21 @@ describe('challenge', function () {
 
     describe('#list', function () {
       it('should display "no challenges" message', async function () {
-        sinon.stub(Challenge, 'list').returns(Promise.resolve([]));
+        sinon.stub(Challenge, 'find').returns(Promise.resolve([]));
         const result = await challenge({ text: 'list' });
 
         expect(result.response.text).toEqual("No active challenges");
-        Challenge.list.restore();
+        Challenge.find.restore();
       });
 
       it('should list challenges', async function () {
-        sinon.stub(Challenge, 'list').returns(Promise.resolve([
+        sinon.stub(Challenge, 'find').returns(Promise.resolve([
           { name: 'Plank Challenge' }
         ]));
         const result = await challenge({ text: 'list' });
 
         expect(result.response.text).toEqual("Plank Challenge\n");
-        Challenge.list.restore();
+        Challenge.find.restore();
       });
     });
 

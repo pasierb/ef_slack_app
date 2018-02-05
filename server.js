@@ -14,6 +14,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 middlewares.forEach(midlleware => midlleware(app));
 routes.forEach(route => route(app));
 
-app.listen(3000, () => {
+app.listen(3000, '0.0.0.0', () => {
   console.log('Server listening on port 3000...');
 });

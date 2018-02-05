@@ -1,29 +1,10 @@
-const STORE = [];
+// const STORE = [];
+const mongoose = require('../../config/mongoose');
 
-class Challenge {
-  constructor(attributes) {
-    this.attributes = attributes;
+const schema = new mongoose.Schema({
+  name: 'string',
+});
 
-    this._scores = {};
-  }
-
-  save() {
-    STORE.push(this.attributes);
-
-    return Promise.resolve(this);
-  }
-
-  addParticipant(name) {
-    this._scores[name] = 0;
-  }
-
-  scores() {
-    return this._scores;
-  }
-}
-
-Challenge.list = function() {
-  return Promise.resolve([].concat(STORE));
-}
+const Challenge = mongoose.model('Challenge', schema);
 
 module.exports = Challenge;
