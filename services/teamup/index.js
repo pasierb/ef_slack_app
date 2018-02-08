@@ -1,36 +1,48 @@
-const sprintf = require('sprintf-js').sprintf;
 const Teamup = require('./Teamup');
+const jobs = {};
+const {
+  list,
+  attributes,
+  create,
+  cancel,
+  update,
+  destroy,
+  scheduled,
+} = require('./triggers');
 
-const MESSAGES = {
-  created: 'Teamup "%s" (`%s`) created.',
-  empty: 'No active teamups.',
+const TRIGGERS = {
+  'with': attributes,
+  create,
+  cancel,
+  scheduled,
+  'remove': destroy,
+  update,
+  list,
 };
 
-const ACTIONS = {
-  create: async function({ text }) {
-    const [matched, action, name, code] = text.match(/^(\w+)\W+(.*)\W+(\w+)$/);
-    const teamup = new Teamup({ name, code });
-
-    await teamup.save();
-
-    return {
-      text: sprintf(MESSAGES.created, name, code)
-    }
-  },
-  schedule() {},
-  list: async function() {
-    const teamups = await Teamup.find();
-    const text = teamups.length > 0 ? teamups.map(t => `\`${t.code}\` ${t.name}`).join('\n') : MESSAGES.empty;
-
-    return {
-      text
-    };
-  },
-  delete() {},
-};
+Teamup.find().then((teamups) => {
+  teamups.forEach((tu) => {
+    jobs[tu.name] = tu.schedule();
+  });
+});
 
 module.exports = function (data) {
-  const action = data.text.match(/^\w+/)[0];
+  const chunks = [];
 
-  return ACTIONS[action](data);
+  data.text.split(/\s+/).forEach((token) => {
+    if (TRIGGERS[token.toLowerCase()]) {
+      chunks.push({ trigger: token.toLowerCase(), values: [] });
+    } else {
+      chunks[chunks.length - 1].values.push(token)
+    }
+  });
+
+  const attrs = chunks.reduce((acc, chunk) => {
+    return Object.assign({}, acc, TRIGGERS[chunk.trigger](chunk.values));
+  }, {
+    channelId: data['channel_id'],
+    jobs: jobs
+  });
+
+  return attrs.action(attrs);
 };

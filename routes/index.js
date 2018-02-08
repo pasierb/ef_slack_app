@@ -1,5 +1,5 @@
-const challenge = require('./challenge');
+const teamup = require('./teamup');
 
 module.exports = [
-  challenge,
+  teamup
 ];

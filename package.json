@@ -16,10 +16,12 @@
   "author": "michal.pasierbski@ef.com",
   "license": "ISC",
   "dependencies": {
+    "@slack/client": "^3.16.0",
     "@slack/events-api": "^1.0.1",
     "dotenv": "^5.0.0",
     "express": "^4.16.2",
     "mongoose": "^5.0.3",
+    "node-schedule": "^1.3.0",
     "sprintf-js": "^1.1.1"
   },
   "devDependencies": {
