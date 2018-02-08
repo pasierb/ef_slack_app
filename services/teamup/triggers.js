@@ -34,6 +34,7 @@ module.exports.create = (values) => ({
 module.exports.attributes = (values) => {
   const delimiters = [',', 'and'];
   const fieldsMap = {
+    cron: 'cron',
     message: 'message',
     image: 'imageUrl'
   };
@@ -106,5 +107,7 @@ module.exports.destroy = (values) => ({
 });
 
 module.exports.help = () => ({
-  action: () => Promise.resolve({ text: messages.help }),
+  action: () => Promise.resolve({
+    text: messages.help,
+  }),
 });
