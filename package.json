@@ -14,7 +14,7 @@
     "Bot"
   ],
   "author": "michal.pasierbski@ef.com",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@slack/client": "^3.16.0",
     "@slack/events-api": "^1.0.1",

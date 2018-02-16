@@ -4,10 +4,11 @@ const sprintf = require('sprintf-js').sprintf;
 
 module.exports.list = (values) => ({
   action: () => new Promise((resolve, reject) => {
-    Teamup.find().then((tus) => (resolve({
-      // text: tus.map(tu => sprintf('*%s* scheduled at `%s`', tu.name, tu.cron)).join('\n'),
-      text: tus.map(tu => tu.toMarkdown()).join('\n'),
-    }))).catch(reject);
+    Teamup.find().then((tus) => {
+      resolve({
+        text: tus.length ? tus.map(tu => tu.toMarkdown()).join('\n') : messages.empty,
+      })
+    }).catch(reject);
   })
 });
 
@@ -31,55 +32,34 @@ module.exports.create = (values) => ({
   }))
 });
 
-module.exports.attributes = (values) => {
-  const delimiters = [',', 'and'];
-  const fieldsMap = {
-    cron: 'cron',
-    message: 'message',
-    image: 'imageUrl'
+module.exports.attribute = (key) => {
+  const delimiters = ['and', ',']
+
+  return (values = []) => {
+    const v = [...values];
+
+    if (delimiters.indexOf(v[v.length -1]) !== -1) {
+      v.pop();
+    }
+
+    return { [key]: v.join(' ') };
   };
-  const result = {};
-  let key;
-  let stack = [];
-
-  values.forEach((value) => {
-    const normalized = value.toLowerCase()
-
-    if (fieldsMap[normalized]) {
-      stack.length = 0;
-
-      key = fieldsMap[normalized];
-      return;
-    }
-
-    if (delimiters.indexOf(normalized) !== -1) {
-      stack.push(value)
-      return;
-    }
-
-    if (stack.length) {
-      result[key] += ` ${stack.splice(0).join(' ')}`;
-    }
-
-    if (result[key]) {
-      result[key] += ` ${value}`;
-    } else {
-      result[key] = value;
-    }
-  });
-
-  return result;
-};
-
-module.exports.scheduled = (values) => ({ cron: values.join(' ') });
+}
 
 module.exports.update = (values) => ({
   name: values.join(' '),
-  action: ({ name, cron, channelId, imageUrl, message }) => {
+  action: ({ name, cron, channelId, imageUrl, message, jobs }) => {
     return new Promise((resolve, reject) => {
-      Teamup.updateOne({ name }, { cron, imageUrl, message }).then(tu => resolve({
-        text: `*${tu.name}* updated`,
-      })).catch(reject);
+      const attrs = { cron, imageUrl, message };
+
+      Object.keys(attrs).forEach(k => attrs[k] === undefined ? delete attrs[k] : null);
+
+      Teamup.findOneAndUpdate({ name }, attrs, { new: true }).then((tu) => {
+        jobs[name] && jobs[name].cancel();
+        jobs[name] = tu.schedule()
+
+        resolve({ text: `*${tu.name}* updated` });
+      }).catch(reject);
     })
   }
 })
@@ -95,6 +75,13 @@ module.exports.cancel = (values) => ({
   }))
 });
 
+module.exports.test = (values) => ({
+  name: values.join(' '),
+  action: ({ name }) => (new Promise((resolve, reject) => {
+    Teamup.findOne({ name }).then(tu => tu.postMessage()).catch(reject);
+  }))
+})
+
 module.exports.destroy = (values) => ({
   name: values.join(' '),
   action: ({ name, jobs }) => (new Promise((resolve, reject) => {
@@ -109,5 +96,11 @@ module.exports.destroy = (values) => ({
 module.exports.help = () => ({
   action: () => Promise.resolve({
     text: messages.help,
+    attachments: [
+      {
+        'title': 'Crontab syntax help (https://crontab.guru/)',
+        'title_link': 'https://crontab.guru/',
+      }
+    ]
   }),
 });

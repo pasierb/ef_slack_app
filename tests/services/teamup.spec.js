@@ -17,8 +17,12 @@ describe('teamup', function () {
   });
 
   describe('service', function () {
-    // describe('list', function () {
-    //   it('should return "no active teamups" message', async function () {
+    describe('list', function () {
+      it('should not fail?', async function () {
+        const result = await teamup({ text: 'list' });
+        console.log(result);
+      })
+    });
     //     const result = await teamup({ text: 'list' });
     //     expect(result.text).toEqual('No active teamups.');
     //   });
@@ -32,7 +36,6 @@ describe('teamup', function () {
     //     expect(result.text).toEqual('`d1` Dummy1\n`d2` Dummy2');
     //     Teamup.find.restore();
     //   });
-    // });
 
     describe('create', function () {
       it('should return confirmation text', async function () {
@@ -46,7 +49,7 @@ describe('teamup', function () {
       it('should execute with trigger', async function () {
         const { model } = await teamup({
           ...defaultParams,
-          text: 'create Stand up scheduled 0 10 * * * with message Let\'s talk project! and image <http://images.com/poop.png>'
+          text: 'create Stand up scheduled 0 10 * * * message Let\'s talk project! and image <http://images.com/poop.png>'
         });
 
         expect(model.name).toEqual('Stand up');
@@ -58,7 +61,7 @@ describe('teamup', function () {
       it('should use delimiter in context', async function () {
         const { model } = await teamup({
           ...defaultParams,
-          text: 'create Stand up scheduled 0 10 * * * with message Let\'s talk project and stuff! and image <http://images.com/poop.png>'
+          text: 'create Stand up scheduled 0 10 * * * message Let\'s talk project and stuff! and image <http://images.com/poop.png>'
         });
 
         expect(model.name).toEqual('Stand up');

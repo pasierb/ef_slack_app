@@ -1,29 +1,31 @@
 const Teamup = require('./Teamup');
 const jobs = {};
 const {
+  help,
   list,
-  attributes,
+  attribute,
   create,
   cancel,
   update,
   destroy,
-  scheduled,
+  test,
 } = require('./triggers');
 
 const TRIGGERS = {
-  'with': attributes,
-  create,
-  cancel,
-  scheduled,
-  'remove': destroy,
-  update,
+  help,
   list,
+  create,
+  update,
+  'remove': destroy,
+  cancel,
+  test,
+  scheduled: attribute('cron'),
+  message: attribute('message'),
+  image: attribute('imageUrl'),
 };
 
 Teamup.find().then((teamups) => {
-  teamups.forEach((tu) => {
-    jobs[tu.name] = tu.schedule();
-  });
+  teamups.forEach(tu => jobs[tu.name] = tu.schedule());
 });
 
 module.exports = function (data) {

@@ -13,10 +13,10 @@ const schema = new mongoose.Schema({
 const Teamup = mongoose.model('Teamup', schema);
 
 Teamup.prototype.postMessage = function () {
-  slackClient.chat.postMessage(this.channelId, this.name, {
+  slackClient.chat.postMessage(this.channelId, (this.message || this.name), {
     attachments: [
       {
-        'text': this.message || this.name,
+        'text': `*${this.name}*`,
         'image_url': this.imageUrl && this.imageUrl.replace(/(^<|>$)/g, ''),
       }
     ]
