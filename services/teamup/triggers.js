@@ -3,33 +3,30 @@ const messages = require('./messages');
 const sprintf = require('sprintf-js').sprintf;
 
 module.exports.list = (values) => ({
-  action: () => new Promise((resolve, reject) => {
-    Teamup.find().then((tus) => {
+  action: ({ channelId }) => new Promise((resolve, reject) => {
+    Teamup.find({ channelId }, (err, tus) => {
+      if (err) return reject(err);
+
       resolve({
         text: tus.length ? tus.map(tu => tu.toMarkdown()).join('\n') : messages.empty,
-      })
-    }).catch(reject);
+      });
+    });
   })
 });
 
 module.exports.create = (values) => ({
   name: values.join(' '),
-  action: ({ name, cron, channelId, imageUrl, message, jobs }) => (new Promise((resolve, reject) => {
-    Teamup.create({
-      name,
-      cron,
-      channelId,
-      imageUrl,
-      message
-    }).then(tu => {
-      jobs[tu.name] = tu.schedule();
+  action: ({ name, cron, channelId, imageUrl, message, jobs }) => new Promise((resolve, reject) => {
+    Teamup.create({ name, cron, channelId, imageUrl, message }, (err, tu) => {
+      if (err) return reject(err);
 
+      jobs[tu.name] = tu.schedule();
       resolve({
         model: tu,
         text: sprintf(messages.created, tu.name),
-      });
-    }).catch(reject);
-  }))
+      })
+    });
+  })
 });
 
 module.exports.attribute = (key) => {
@@ -54,12 +51,14 @@ module.exports.update = (values) => ({
 
       Object.keys(attrs).forEach(k => attrs[k] === undefined ? delete attrs[k] : null);
 
-      Teamup.findOneAndUpdate({ name }, attrs, { new: true }).then((tu) => {
+      Teamup.findOneAndUpdate({ name }, attrs, { new: true }, (err, tu) => {
+        if (err) return reject(err);
+
         jobs[name] && jobs[name].cancel();
         jobs[name] = tu.schedule()
 
         resolve({ text: `*${tu.name}* updated` });
-      }).catch(reject);
+      })
     })
   }
 })
@@ -67,27 +66,38 @@ module.exports.update = (values) => ({
 module.exports.cancel = (values) => ({
   name: values.join(' '),
   action: ({ name, jobs }) => (new Promise((resolve, reject) => {
-    Teamup.findOne({ name }).then((tu) => {
+    Teamup.findOne({ name }, (err, tu) => {
+      if (err) return reject(err);
+
       jobs[tu.name] && jobs[tu.name].cancel();
 
       resolve({ text: sprintf(messages.canceled, tu.name) });
-    }).catch(reject);
+    });
   }))
 });
 
 module.exports.test = (values) => ({
   name: values.join(' '),
-  action: ({ name }) => (new Promise((resolve, reject) => {
-    Teamup.findOne({ name }).then(tu => tu.postMessage()).catch(reject);
+  action: ({ name, channelId }) => (new Promise((resolve, reject) => {
+    Teamup.findOne({ name }).then(tu => {
+      console.log(tu);
+
+      tu && tu.postMessage({
+        'response_type': 'ephemeral',
+      });
+
+      resolve();
+    });
   }))
 })
 
 module.exports.destroy = (values) => ({
   name: values.join(' '),
   action: ({ name, jobs }) => (new Promise((resolve, reject) => {
-    Teamup.findOneAndRemove({ name: name }).then((tu) => {
-      jobs[tu.name] && jobs[tu.name].cancel();
+    Teamup.findOneAndRemove({ name: name }, (err, tu) => {
+      if (err) return reject(err);
 
+      jobs[tu.name] && jobs[tu.name].cancel();
       resolve({ text: 'delete' });
     });
   })),

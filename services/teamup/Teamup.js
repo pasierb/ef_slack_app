@@ -12,15 +12,21 @@ const schema = new mongoose.Schema({
 });
 const Teamup = mongoose.model('Teamup', schema);
 
-Teamup.prototype.postMessage = function () {
-  slackClient.chat.postMessage(this.channelId, (this.message || this.name), {
+Teamup.prototype.postMessage = function (params = {}) {
+  const data = Object.assign({
+    channel: this.channelId,
+    text: (this.message || this.name),
     attachments: [
       {
         'text': `*${this.name}*`,
         'image_url': this.imageUrl && this.imageUrl.replace(/(^<|>$)/g, ''),
       }
     ]
-  });
+  }, params);
+
+  console.log(data);
+
+  return slackClient.chat.postMessage(data);
 };
 
 Teamup.prototype.schedule = function () {
